@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import Searchbar from '../Searchbar';
 import ImageGallery from '../ImageGallery';
 import { Wrapper } from './App.styled';
@@ -15,107 +15,90 @@ const STATUS = {
   REJECTED: 'rejected',
 };
 
-export class App extends Component {
-  state = {
-    images: [],
-    searchWord: '',
-    modalIsVisible: false,
-    currentImg: '',
-    status: STATUS.IDLE,
-    error: '',
-    currentPage: 1,
-    totalPage: 0,
-    imgOnPage: 12,
-  };
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [searchWord, setSearchWord] = useState('');
+  const [modalIsVisible, setModalIsVisible] = useState(false);
+  const [currentImg, setCurrentImg] = useState('');
+  const [status, setStatus] = useState(STATUS.IDLE);
+  const [error, setTrror] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
+  const [imgOnPage, setImgOnPage] = useState(12);
 
-  async componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.searchWord !== this.state.searchWord ||
-      prevState.currentPage !== this.state.currentPage
-    ) {
-      this.fetchIMG();
+  useEffect(() => {
+    if (!searchWord) {
+      return;
     }
-  }
+    fetchIMG();
+  }, [searchWord, currentPage]);
 
-  async fetchIMG() {
+  const fetchIMG = async () => {
     try {
-      const images = await getIMG(
-        this.state.searchWord,
-        this.state.currentPage
-      );
+      const imagesFetch = await getIMG(searchWord, currentPage);
 
-      if (!images.total) {
+      if (!imagesFetch.total) {
         throw new Error('No matches found');
       }
 
-      const CalctotalPage = Math.ceil(images.total / 12);
+      const CalctotalPage = Math.ceil(imagesFetch.total / imgOnPage);
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...images.hits],
-        status: STATUS.RESOLVED,
-        totalPage: CalctotalPage,
-      }));
+      setImages([...images, ...imagesFetch.hits]);
+
+      setStatus(STATUS.RESOLVED);
+      setTotalPage(CalctotalPage);
+      console.log(images);
     } catch (error) {
-      this.setState({ error: error.message, status: STATUS.REJECTED });
+      setTrror(error.message);
+      setStatus(STATUS.REJECTED);
     }
-  }
-
-  onSubmitForm = searchWord => {
-    this.setState({
-      searchWord,
-      currentPage: 1,
-      images: [],
-      status: STATUS.PENDING,
-    });
   };
 
-  handleModal = () => {
-    this.setState(prevState => ({
-      modalIsVisible: !prevState.modalIsVisible,
-    }));
+  const onSubmitForm = searchWord => {
+    setCurrentPage(1);
+    setImages([]);
+    setSearchWord(searchWord);
+    setStatus(STATUS.PENDING);
   };
 
-  handlSetCurrentImg = img => {
-    this.handleModal();
-    this.setState({ currentImg: img });
+  const handleModal = () => {
+    setModalIsVisible(!modalIsVisible);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ currentPage: prevState.currentPage + 1 }));
+  const handlSetCurrentImg = img => {
+    handleModal();
+    setCurrentImg(img);
   };
 
-  render() {
-    const { currentImg, searchWord, status, modalIsVisible, images } =
-      this.state;
-    const { onSubmitForm, handlSetCurrentImg, handleModal, handleLoadMore } =
-      this;
+  const handleLoadMore = () => {
+    setCurrentPage(currentPage + 1);
+  };
 
-    const showLoadMoreButton =
-      this.state.images.length !== 0 &&
-      this.state.currentPage < this.state.totalPage;
+  const showLoadMoreButton = images.length !== 0 && currentPage < totalPage;
+  console.log(images);
+  return (
+    <Wrapper>
+      <Searchbar onSubmitForm={onSubmitForm}></Searchbar>
+      <Loader status={status}></Loader>
+      <ImageGallery
+        searchWord={searchWord}
+        images={images}
+        handlSetCurrentImg={handlSetCurrentImg}
+        webformatURL={currentImg}
+        status={status}
+      />
 
-    return (
-      <Wrapper>
-        <Searchbar onSubmitForm={onSubmitForm}></Searchbar>
-        <Loader status={status}></Loader>
-        <ImageGallery
-          images={images}
-          searchWord={searchWord}
-          handlSetCurrentImg={handlSetCurrentImg}
-          webformatURL={currentImg}
-          status={status}
-        />
+      {showLoadMoreButton && (
+        <Button handleClick={handleLoadMore}>Load More</Button>
+      )}
 
-        {showLoadMoreButton && (
-          <Button handleClick={handleLoadMore}>Load More</Button>
-        )}
+      {modalIsVisible && (
+        <Modal currentImg={currentImg} handleModal={handleModal} />
+      )}
 
-        {modalIsVisible && (
-          <Modal currentImg={currentImg} handleModal={handleModal} />
-        )}
+      <Skeleton status={status} />
+    </Wrapper>
+  );
+};
 
-        <Skeleton status={status} />
-      </Wrapper>
-    );
-  }
-}
+export default App;
