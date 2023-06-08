@@ -21,7 +21,7 @@ const App = () => {
   const [modalIsVisible, setModalIsVisible] = useState(false);
   const [currentImg, setCurrentImg] = useState('');
   const [status, setStatus] = useState(STATUS.IDLE);
-  const [error, setTrror] = useState('');
+  const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
   const [imgOnPage, setImgOnPage] = useState(12);
@@ -30,29 +30,30 @@ const App = () => {
     if (!searchWord) {
       return;
     }
-    fetchIMG();
-  }, [searchWord, currentPage]);
 
-  const fetchIMG = async () => {
-    try {
-      const imagesFetch = await getIMG(searchWord, currentPage);
+    const fetchIMG = async () => {
+      try {
+        const imagesFetch = await getIMG(searchWord, currentPage);
 
-      if (!imagesFetch.total) {
-        throw new Error('No matches found');
+        if (!imagesFetch.total) {
+          throw new Error('No matches found');
+        }
+
+        const CalctotalPage = Math.ceil(imagesFetch.total / imgOnPage);
+
+        setImages([...images, ...imagesFetch.hits]);
+
+        setStatus(STATUS.RESOLVED);
+        setTotalPage(CalctotalPage);
+        console.log(images);
+      } catch (error) {
+        setError(error.message);
+        setStatus(STATUS.REJECTED);
       }
+    };
 
-      const CalctotalPage = Math.ceil(imagesFetch.total / imgOnPage);
-
-      setImages([...images, ...imagesFetch.hits]);
-
-      setStatus(STATUS.RESOLVED);
-      setTotalPage(CalctotalPage);
-      console.log(images);
-    } catch (error) {
-      setTrror(error.message);
-      setStatus(STATUS.REJECTED);
-    }
-  };
+    fetchIMG();
+  }, [searchWord, currentPage, images, imgOnPage]);
 
   const onSubmitForm = searchWord => {
     setCurrentPage(1);
