@@ -24,7 +24,8 @@ const App = () => {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
-  const [imgOnPage, setImgOnPage] = useState(12);
+
+  const IMAGE_ON_PAGE = 12;
 
   useEffect(() => {
     if (!searchWord) {
@@ -39,7 +40,7 @@ const App = () => {
           throw new Error('No matches found');
         }
 
-        const CalctotalPage = Math.ceil(imagesFetch.total / imgOnPage);
+        const CalctotalPage = Math.ceil(imagesFetch.total / IMAGE_ON_PAGE);
 
         setImages([...images, ...imagesFetch.hits]);
 
@@ -50,10 +51,11 @@ const App = () => {
         setError(error.message);
         setStatus(STATUS.REJECTED);
       }
+      console.log(`Error: ${error}`);
     };
 
     fetchIMG();
-  }, [searchWord, currentPage, images, imgOnPage]);
+  }, [searchWord, currentPage, images, error]);
 
   const onSubmitForm = searchWord => {
     setCurrentPage(1);
@@ -76,7 +78,7 @@ const App = () => {
   };
 
   const showLoadMoreButton = images.length !== 0 && currentPage < totalPage;
-  console.log(images);
+
   return (
     <Wrapper>
       <Searchbar onSubmitForm={onSubmitForm}></Searchbar>
