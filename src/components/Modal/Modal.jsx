@@ -5,15 +5,15 @@ import { Overlay, ModalImg } from './Modal.styled';
 
 const Modal = ({ handleModal, currentImg }) => {
   useEffect(() => {
-    window.addEventListener('keydown', this.closeOnEsc);
-    document.body.style.overflow = 'hidden';
-    return (
-      window.removeEventListener('keydown', this.closeOnEsc),
-      (document.body.style.overflow = 'visible')
-    );
+    console.log('do');
+    window.addEventListener('keydown', closeOnEsc);
+    // document.body.style.overflow = 'hidden';
+    return window.removeEventListener('keydown', closeOnEsc);
+    // (document.body.style.overflow = 'visible')
   }, []);
 
   const closeOnEsc = e => {
+    console.log('hi');
     if (e.code === 'Escape') {
       handleModal();
     }
@@ -33,7 +33,7 @@ const Modal = ({ handleModal, currentImg }) => {
         <img src={currentImg} alt="" />
       </ModalImg>
     </Overlay>,
-    this.modalRoot
+    modalRoot
   );
 };
 
