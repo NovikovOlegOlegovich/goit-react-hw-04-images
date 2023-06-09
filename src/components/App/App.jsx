@@ -47,11 +47,10 @@ const App = () => {
       } catch (errors) {
         setError(errors.message);
         setStatus(STATUS.REJECTED);
-        console.log(`Error: ${error}`);
       }
     };
     fetchImsges();
-  }, [searchWord, currentPage, error]);
+  }, [searchWord, currentPage]);
 
   const onSubmitForm = searchWord => {
     setSearchWord(searchWord);
@@ -95,7 +94,7 @@ const App = () => {
         <Modal currentImg={currentImg} handleModal={handleModal} />
       )}
 
-      <Skeleton status={status} />
+      <Skeleton status={status} error={error} />
     </Wrapper>
   );
 };
