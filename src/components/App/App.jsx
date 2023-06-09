@@ -28,6 +28,9 @@ const App = () => {
   const [totalPage, setTotalPage] = useState(0);
 
   useEffect(() => {
+    if (!searchWord) {
+      return;
+    }
     const fetchImsges = async () => {
       try {
         const fetchImages = await getIMG(searchWord, currentPage);
