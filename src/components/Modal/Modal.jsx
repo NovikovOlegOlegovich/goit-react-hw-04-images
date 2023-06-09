@@ -5,15 +5,20 @@ import { Overlay, ModalImg } from './Modal.styled';
 
 const Modal = ({ handleModal, currentImg }) => {
   useEffect(() => {
-    const closeOnEsc = e => {
-      if (e.code === 'Escape') {
+    const closeOnEsc = evt => {
+      if (evt.code === 'Escape') {
+        console.log('ESC');
         handleModal();
       }
     };
+
     window.addEventListener('keydown', closeOnEsc);
-    // document.body.style.overflow = 'hidden';
-    return window.removeEventListener('keydown', closeOnEsc);
-    // (document.body.style.overflow = 'visible')
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', closeOnEsc);
+      document.body.style.overflow = 'visible';
+    };
   }, [handleModal]);
 
   const handleBackdropClick = e => {

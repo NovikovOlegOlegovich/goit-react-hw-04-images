@@ -14,7 +14,8 @@ const STATUS = {
   RESOLVED: 'resolved',
   REJECTED: 'rejected',
 };
-const IMG_ONPPAGE = 12;
+
+const IMG_ON_PAGE = 12;
 
 const App = () => {
   const [images, setImages] = useState([]);
@@ -27,42 +28,37 @@ const App = () => {
   const [totalPage, setTotalPage] = useState(0);
 
   useEffect(() => {
-    if (!searchWord) {
-      return;
-    }
-    fetchIMG();
-  }, [searchWord, currentPage]);
+    const fetchImsges = async () => {
+      try {
+        const fetchImages = await getIMG(searchWord, currentPage);
 
-  const fetchIMG = async () => {
-    try {
-      const imagesFetch = await getIMG(searchWord, currentPage);
+        if (!fetchImages.total) {
+          throw new Error('No matches found');
+        }
 
-      if (!imagesFetch.total) {
-        throw new Error('No matches found');
+        const CalctotalPage = Math.ceil(fetchImages.total / IMG_ON_PAGE);
+
+        setImages(images => [...images, ...fetchImages.hits]);
+        setStatus(STATUS.RESOLVED);
+        setTotalPage(CalctotalPage);
+      } catch (errors) {
+        setError(errors.message);
+        setStatus(STATUS.REJECTED);
+        console.log(`Error: ${error}`);
       }
-
-      const CalctotalPage = Math.ceil(imagesFetch.total / IMG_ONPPAGE);
-
-      setImages([...images, ...imagesFetch.hits]);
-
-      setStatus(STATUS.RESOLVED);
-      setTotalPage(CalctotalPage);
-      console.log(images);
-    } catch (error) {
-      setError(error.message);
-      setStatus(STATUS.REJECTED);
-    }
-  };
+    };
+    fetchImsges();
+  }, [searchWord, currentPage, error]);
 
   const onSubmitForm = searchWord => {
+    setSearchWord(searchWord);
     setCurrentPage(1);
     setImages([]);
-    setSearchWord(searchWord);
     setStatus(STATUS.PENDING);
   };
 
   const handleModal = () => {
-    setModalIsVisible(!modalIsVisible);
+    setModalIsVisible(modalIsVisible => !modalIsVisible);
   };
 
   const handlSetCurrentImg = img => {
@@ -71,18 +67,18 @@ const App = () => {
   };
 
   const handleLoadMore = () => {
-    setCurrentPage(currentPage + 1);
+    setCurrentPage(currentPage => currentPage + 1);
   };
 
   const showLoadMoreButton = images.length !== 0 && currentPage < totalPage;
-  console.log(images);
+
   return (
     <Wrapper>
       <Searchbar onSubmitForm={onSubmitForm}></Searchbar>
       <Loader status={status}></Loader>
       <ImageGallery
-        searchWord={searchWord}
         images={images}
+        searchWord={searchWord}
         handlSetCurrentImg={handlSetCurrentImg}
         webformatURL={currentImg}
         status={status}
