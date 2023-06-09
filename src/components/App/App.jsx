@@ -14,6 +14,7 @@ const STATUS = {
   RESOLVED: 'resolved',
   REJECTED: 'rejected',
 };
+const IMG_ONPPAGE = 12;
 
 const App = () => {
   const [images, setImages] = useState([]);
@@ -25,37 +26,33 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
 
-  const IMAGE_ON_PAGE = 12;
-
   useEffect(() => {
     if (!searchWord) {
       return;
     }
-
-    const fetchIMG = async () => {
-      try {
-        const imagesFetch = await getIMG(searchWord, currentPage);
-
-        if (!imagesFetch.total) {
-          throw new Error('No matches found');
-        }
-
-        const CalctotalPage = Math.ceil(imagesFetch.total / IMAGE_ON_PAGE);
-
-        setImages([...images, ...imagesFetch.hits]);
-
-        setStatus(STATUS.RESOLVED);
-        setTotalPage(CalctotalPage);
-        console.log(images);
-      } catch (error) {
-        setError(error.message);
-        setStatus(STATUS.REJECTED);
-      }
-      console.log(`Error: ${error}`);
-    };
-
     fetchIMG();
-  }, [searchWord, currentPage, images, error]);
+  }, [searchWord, currentPage]);
+
+  const fetchIMG = async () => {
+    try {
+      const imagesFetch = await getIMG(searchWord, currentPage);
+
+      if (!imagesFetch.total) {
+        throw new Error('No matches found');
+      }
+
+      const CalctotalPage = Math.ceil(imagesFetch.total / IMG_ONPPAGE);
+
+      setImages([...images, ...imagesFetch.hits]);
+
+      setStatus(STATUS.RESOLVED);
+      setTotalPage(CalctotalPage);
+      console.log(images);
+    } catch (error) {
+      setError(error.message);
+      setStatus(STATUS.REJECTED);
+    }
+  };
 
   const onSubmitForm = searchWord => {
     setCurrentPage(1);
@@ -78,7 +75,7 @@ const App = () => {
   };
 
   const showLoadMoreButton = images.length !== 0 && currentPage < totalPage;
-
+  console.log(images);
   return (
     <Wrapper>
       <Searchbar onSubmitForm={onSubmitForm}></Searchbar>
